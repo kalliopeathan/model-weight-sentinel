@@ -1,5 +1,6 @@
 venv/
 __pycache__/
+test_models/
 *.pt
 *.bin
 *.safetensors
