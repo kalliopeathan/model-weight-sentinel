@@ -1,5 +1,6 @@
 import hashlib
 from safetensors import safe_open
+import json
 
 def hash_tensor(tensor):
     tensor = tensor.contiguous()
@@ -19,7 +20,12 @@ def hash_checkpoint(path):
             manifest[name] = hash_tensor(tensor)
     return manifest
 
+def save_manifest(manifest, out_path):
+    with open(out_path, "w") as f:
+        json.dump(manifest, f, indent=2)
+
 if __name__ == "__main__":
     import sys
     manifest = hash_checkpoint(sys.argv[1])
-    print(len(manifest))
+    save_manifest(manifest, "manifest.json")
+    print(f"Hashed {len(manifest)} tensors")

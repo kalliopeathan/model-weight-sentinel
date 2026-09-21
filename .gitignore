@@ -5,3 +5,4 @@ test_models/
 *.bin
 *.safetensors
 .DS_Store
+manifest.json
