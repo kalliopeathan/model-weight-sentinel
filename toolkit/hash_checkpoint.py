@@ -10,3 +10,12 @@ if __name__ == "__main__":
     with safe_open(sys.argv[1], framework="pt") as f:
         t = f.get_tensor("wte.weight")
         print(hash_tensor(t))
+
+def hash_checkpoint(path):
+    manifest = {}
+    with safe_open(path, framework="pt") as f:
+        for name in f.keys():
+            tensor = f.get_tensor(name)
+            manifest[name] = hash_tensor(tensor)
+    return manifest
+
