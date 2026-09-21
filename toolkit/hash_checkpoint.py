@@ -25,7 +25,7 @@ def save_manifest(manifest, out_path):
         json.dump(manifest, f, indent=2)
 
 def aggregate_hash(manifest):
-    combined = "".join(manifest.values())
+    combined = "".join(manifest[k] for k in sorted(manifest.keys()))
     return hashlib.sha256(combined.encode()).hexdigest()
 
 if __name__ == "__main__":
