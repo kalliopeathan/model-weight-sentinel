@@ -19,3 +19,7 @@ def hash_checkpoint(path):
             manifest[name] = hash_tensor(tensor)
     return manifest
 
+if __name__ == "__main__":
+    import sys
+    manifest = hash_checkpoint(sys.argv[1])
+    print(len(manifest))
