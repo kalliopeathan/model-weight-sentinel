@@ -3,10 +3,12 @@ from safetensors import safe_open
 import json
 
 def hash_tensor(tensor):
-    tensor = tensor.contiguous()
+    #hash a single tensor's raw bytes with SHA-256
+    tensor = tensor.contiguous()  #ensure standard memory layout before reading raw bytes
     return hashlib.sha256(tensor.numpy().tobytes()).hexdigest()
 
 def hash_checkpoint(path):
+    #hash every tensor in a safetensors checkpoint & return a name->hash manifest
     manifest = {}
     with safe_open(path, framework="pt") as f:
         for name in f.keys():
@@ -15,15 +17,17 @@ def hash_checkpoint(path):
     return manifest
 
 def save_manifest(manifest, out_path):
+    #write the manifest dict to a JSON file
     with open(out_path, "w") as f:
         json.dump(manifest, f, indent=2)
 
 def aggregate_hash(manifest):
-    combined = "".join(manifest[k] for k in sorted(manifest.keys()))
+    #combine all single-tensor hashes into one for the whole checkpoint.
+    combined = "".join(manifest[k] for k in sorted(manifest.keys())) #sort keys for determinism
     return hashlib.sha256(combined.encode()).hexdigest()
 
 if __name__ == "__main__":
     import sys
     manifest = hash_checkpoint(sys.argv[1])
-    save_manifest(manifest, "manifest.json")
+    save_manifest(manifest, "manifest.json") #save per-tensor hashes to disk for later verification
     print(f"Hashed {len(manifest)} tensors")
