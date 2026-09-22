@@ -1,6 +1,7 @@
 import hashlib
 from safetensors import safe_open
 import json
+import torch
 
 def hash_tensor(tensor):
     #hash a single tensor's raw bytes with SHA-256
@@ -16,6 +17,14 @@ def hash_checkpoint(path):
             manifest[name] = hash_tensor(tensor)
     return manifest
 
+def hash_bin_checkpoint(path):
+    #hash every tensor in a .bin checkpoint
+    state_dict = torch.load(path, map_location="cpu", weights_only=True)
+    manifest = {}
+    for name, tensor in state_dict.items():
+        manifest[name] = hash_tensor(tensor)
+    return manifest
+
 def save_manifest(manifest, out_path):
     #write the manifest dict to a JSON file
     with open(out_path, "w") as f:
@@ -28,6 +37,5 @@ def aggregate_hash(manifest):
 
 if __name__ == "__main__":
     import sys
-    manifest = hash_checkpoint(sys.argv[1])
-    save_manifest(manifest, "manifest.json") #save per-tensor hashes to disk for later verification
-    print(f"Hashed {len(manifest)} tensors")
+    manifest = hash_bin_checkpoint(sys.argv[1])
+    print(f"Hashed {len(manifest)} tensors from bin")
