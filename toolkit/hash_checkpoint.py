@@ -9,13 +9,18 @@ def hash_tensor(tensor):
     return hashlib.sha256(tensor.numpy().tobytes()).hexdigest()
 
 def hash_checkpoint(path):
-    #hash every tensor in a safetensors checkpoint & return a name->hash manifest
-    manifest = {}
-    with safe_open(path, framework="pt") as f:
-        for name in f.keys():
-            tensor = f.get_tensor(name)
-            manifest[name] = hash_tensor(tensor)
-    return manifest
+    #hash every tensor in a checkpoint, auto-detecting safetensors vs bin format
+    if path.endswith(".safetensors"):
+        manifest = {}
+        with safe_open(path, framework="pt") as f:
+            for name in f.keys():
+                tensor = f.get_tensor(name)
+                manifest[name] = hash_tensor(tensor)
+        return manifest
+    elif path.endswith(".bin"):
+        return hash_bin_checkpoint(path)
+    else:
+        raise ValueError(f"Unsupported checkpoint format: {path}")
 
 def hash_bin_checkpoint(path):
     #hash every tensor in a .bin checkpoint
@@ -36,6 +41,9 @@ def aggregate_hash(manifest):
     return hashlib.sha256(combined.encode()).hexdigest()
 
 if __name__ == "__main__":
-    st_manifest = hash_checkpoint("test_models/model.safetensors")
-    bin_manifest = hash_bin_checkpoint("test_models/pytorch_model.bin")
-    print(list(bin_manifest.keys())[:5])  #peek at first 5 key names
+    import sys
+    manifest = hash_checkpoint(sys.argv[1])
+    save_manifest(manifest, "manifest.json")
+    print(f"Hashed {len(manifest)} tensors")
+    print(f"Aggregate hash: {aggregate_hash(manifest)}")
+    
