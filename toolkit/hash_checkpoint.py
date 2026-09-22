@@ -36,6 +36,6 @@ def aggregate_hash(manifest):
     return hashlib.sha256(combined.encode()).hexdigest()
 
 if __name__ == "__main__":
-    import sys
-    manifest = hash_bin_checkpoint(sys.argv[1])
-    print(f"Hashed {len(manifest)} tensors from bin")
+    st_manifest = hash_checkpoint("test_models/model.safetensors")
+    bin_manifest = hash_bin_checkpoint("test_models/pytorch_model.bin")
+    print(list(bin_manifest.keys())[:5])  #peek at first 5 key names
