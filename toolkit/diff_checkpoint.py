@@ -1,13 +1,31 @@
 from hash_checkpoint import hash_checkpoint
 
 def diff_manifests(manifest_a, manifest_b):
-    for key in manifest_a:
-        if key in manifest_b and manifest_a[key] != manifest_b[key]:
-            print(f"CHANGED: {key}")
+    #compare 2 manifests(name->hash dicts) and categorize every key as added, removed, changed, or unchanged
+    keys_a = set(manifest_a.keys())
+    keys_b = set(manifest_b.keys())
+
+    added = keys_b - keys_a       #present in b only
+    removed = keys_a - keys_b     #present in a only
+    shared = keys_a & keys_b    #present in both, comparable hashes
+
+    changed = [k for k in shared if manifest_a[k] != manifest_b[k]]
+    unchanged = [k for k in shared if manifest_a[k] == manifest_b[k]]
+
+    return {
+        "added": sorted(added),
+        "removed": sorted(removed),
+        "changed": sorted(changed),
+        "unchanged": sorted(unchanged),
+    }
 
 if __name__ == "__main__":
     import sys
+    #usage: python diff_checkpoint.py <checkpoint_a> <checkpoint_b>
     manifest_a = hash_checkpoint(sys.argv[1])
     manifest_b = hash_checkpoint(sys.argv[2])
-    diff_manifests(manifest_a, manifest_b)
-    print("done")
+    result = diff_manifests(manifest_a, manifest_b)
+    print(f"Added: {len(result['added'])}")
+    print(f"Removed: {len(result['removed'])}")
+    print(f"Changed: {len(result['changed'])}")
+    print(f"Unchanged: {len(result['unchanged'])}")
