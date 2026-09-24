@@ -20,6 +20,8 @@ def main():
         save_manifest(manifest, args.out)
         print(f"Hashed {len(manifest)} tensors")
         print(f"Aggregate hash: {aggregate_hash(manifest)}")
+    else:
+        parser.print_help()
 
 if __name__ == "__main__":
     main()
