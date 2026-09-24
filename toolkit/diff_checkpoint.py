@@ -1,4 +1,12 @@
+from dataclasses import dataclass, field
 from hash_checkpoint import hash_checkpoint
+
+@dataclass
+class DiffResult:
+    added: list = field(default_factory=list)
+    removed: list = field(default_factory=list)
+    changed: list = field(default_factory=list)
+    unchanged: list = field(default_factory=list)
 
 def diff_manifests(manifest_a, manifest_b):
     #compare 2 manifests(name->hash dicts) and categorize every key as added, removed, changed, or unchanged
@@ -7,17 +15,17 @@ def diff_manifests(manifest_a, manifest_b):
 
     added = keys_b - keys_a       #present in b only
     removed = keys_a - keys_b     #present in a only
-    shared = keys_a & keys_b    #present in both, comparable hashes
+    shared = keys_a & keys_b      #present in both, comparable hashes
 
     changed = [k for k in shared if manifest_a[k] != manifest_b[k]]
     unchanged = [k for k in shared if manifest_a[k] == manifest_b[k]]
 
-    return {
-        "added": sorted(added),
-        "removed": sorted(removed),
-        "changed": sorted(changed),
-        "unchanged": sorted(unchanged),
-    }
+    return DiffResult(
+        added=sorted(added),
+        removed=sorted(removed),
+        changed=sorted(changed),
+        unchanged=sorted(unchanged),
+    )
 
 if __name__ == "__main__":
     import sys
@@ -25,7 +33,7 @@ if __name__ == "__main__":
     manifest_a = hash_checkpoint(sys.argv[1])
     manifest_b = hash_checkpoint(sys.argv[2])
     result = diff_manifests(manifest_a, manifest_b)
-    print(f"Added: {len(result['added'])}")
-    print(f"Removed: {len(result['removed'])}")
-    print(f"Changed: {len(result['changed'])}")
-    print(f"Unchanged: {len(result['unchanged'])}")
+    print(f"Added: {len(result.added)}")
+    print(f"Removed: {len(result.removed)}")
+    print(f"Changed: {len(result.changed)}")
+    print(f"Unchanged: {len(result.unchanged)}")
