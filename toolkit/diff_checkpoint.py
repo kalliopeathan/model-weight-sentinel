@@ -44,4 +44,4 @@ if __name__ == "__main__":
     print(f"Removed ({len(result.removed)}): {result.removed}")
     print(f"Changed ({len(result.changed)}): {result.changed}")
     print(f"Unchanged: {len(result.unchanged)}")
-    print(diff_summary(result, total))
+    print(diff_percentage(result, total))
