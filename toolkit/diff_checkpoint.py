@@ -33,7 +33,8 @@ if __name__ == "__main__":
     manifest_a = hash_checkpoint(sys.argv[1])
     manifest_b = hash_checkpoint(sys.argv[2])
     result = diff_manifests(manifest_a, manifest_b)
-    print(f"Added: {len(result.added)}")
-    print(f"Removed: {len(result.removed)}")
-    print(f"Changed: {len(result.changed)}")
+
+    print(f"Added ({len(result.added)}): {result.added}")
+    print(f"Removed ({len(result.removed)}): {result.removed}")
+    print(f"Changed ({len(result.changed)}): {result.changed}")
     print(f"Unchanged: {len(result.unchanged)}")
