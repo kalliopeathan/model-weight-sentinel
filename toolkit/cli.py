@@ -21,26 +21,33 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "hash":
-        manifest = hash_checkpoint(args.path) #hash every tensor in the checkpoint
-        save_manifest(manifest, args.out) #write out the manifest to json
-        print(f"Hashed {len(manifest)} tensors")
-        print(f"Aggregate hash: {aggregate_hash(manifest)}") #combined hash
+    try:
+        if args.command == "hash":
+            manifest = hash_checkpoint(args.path) #hash every tensor in the checkpoint
+            save_manifest(manifest, args.out) #write out the manifest to json
+            print(f"Hashed {len(manifest)} tensors")
+            print(f"Aggregate hash: {aggregate_hash(manifest)}") #combined hash
 
-    elif args.command == "diff":
-        #hash each checkpoint
-        manifest_a = hash_checkpoint(args.path_a)
-        manifest_b = hash_checkpoint(args.path_b)
-        result = diff_manifests(manifest_a, manifest_b) #compare the two manifests
-        print(f"Added ({len(result.added)}): {result.added}")
-        print(f"Removed ({len(result.removed)}): {result.removed}")
-        print(f"Changed ({len(result.changed)}): {result.changed}")
-        print(f"Unchanged: {len(result.unchanged)}")
-        print(diff_percentage(result, len(manifest_a)))
+        elif args.command == "diff":
+            #hash each checkpoint
+            manifest_a = hash_checkpoint(args.path_a)
+            manifest_b = hash_checkpoint(args.path_b)
+            result = diff_manifests(manifest_a, manifest_b) #compare the two manifests
+            print(f"Added ({len(result.added)}): {result.added}")
+            print(f"Removed ({len(result.removed)}): {result.removed}")
+            print(f"Changed ({len(result.changed)}): {result.changed}")
+            print(f"Unchanged: {len(result.unchanged)}")
+            print(diff_percentage(result, len(manifest_a)))
 
-    else:
-        #no subcommand given
-        parser.print_help()
+        else:
+            #no subcommand given
+            parser.print_help()
+    
+    except FileNotFoundError:
+        print("Error: file not found")
+    
+    except ValueError as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
