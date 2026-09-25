@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from hash_checkpoint import hash_checkpoint
+from toolkit.hash_checkpoint import hash_checkpoint
 
 @dataclass
 class DiffResult:
