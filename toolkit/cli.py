@@ -1,6 +1,6 @@
 import argparse
-from hash_checkpoint import hash_checkpoint, save_manifest, aggregate_hash
-from diff_checkpoint import diff_manifests, diff_percentage
+from toolkit.hash_checkpoint import hash_checkpoint, save_manifest, aggregate_hash
+from toolkit.diff_checkpoint import diff_manifests, diff_percentage
 
 #create one entry point with subcommands: toolkit hash <path>, toolkit diff <a> <b>
 #necessary to make this a CLI tool -not separate scripts- and to allow basic tests to pay off by refactoring shared code
