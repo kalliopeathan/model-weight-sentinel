@@ -4,3 +4,4 @@ diff_checkpoint.py: confirmed NaN values in a tensor don't break hashing, since 
 test_quantise.py: simulates int8 quantisation of a checkpoint, used to test diff behaviour against precision-reduced weights.
 test_dtype.py: downcasts checkpoint to fp16 - confirms dtype changes get registered as fully changed (open design question).
 test_shard.py: splits checkpoint into two shards -tool doesn't yet support multi-shard checkpoints (limitation).
+test_nan.py: injects NaN into a tensor - confirms hashing is unaffected (hashes bytes not float comparisons).
