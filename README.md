@@ -20,3 +20,9 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+## Known Limitations
+
+- Sharded checkpoints(split across multiple files) are hashed per-file, without awareness of the full multi-shard set
+- Format conversion (eg fp32 to fp16 or quantisation) registers as changes even when the underlying model is functionally equivalent — hashing is intentionally strict, not semantic
+- Cross-format checkpoints (`.bin` vs `.safetensors`) with different key naming conventions (eg the  `transformer.` prefix) are handled but naming mismatches from custom export pipelines may not normalise correctly
