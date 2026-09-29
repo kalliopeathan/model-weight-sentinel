@@ -1,7 +1,7 @@
 from toolkit.hash_checkpoint import load_tensors
 import torch
 import re
-
+import json
 
 def tensor_stats(tensor):
     #compute basic statistics for one tensor - explicitly flag nan/inf so theyre not silently propagated
@@ -75,9 +75,17 @@ def find_outliers_grouped(profile, stat_name="l2_norm", z_threshold=3.0):
                 outliers.append((name, val, z))
     return outliers
 
+def save_profile(profile, out_path):
+    #write a tensor stats profile to json so it can be reused as a baseline 
+    with open(out_path, "w") as f:
+        json.dump(profile, f, indent=2)
+
+def load_profile(path):
+    #load a previously saved stats profile from json
+    with open(path) as f:
+        return json.load(f)
+
 if __name__ == "__main__":
     profile = profile_checkpoint("test_models/model.safetensors")
-    outliers = find_outliers_grouped(profile)
-    print(f"Found {len(outliers)} outliers")
-    for name, val, z in outliers:
-        print(f"  {name}: l2_norm={val:.2f}, z={z:.2f}")
+    save_profile(profile, "baseline_profile.json")
+    print(f"Saved baseline with {len(profile)} tensors")
