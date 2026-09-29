@@ -96,8 +96,22 @@ def compare_to_baseline(stats, baseline_stats, stat_name="l2_norm", tolerance=0.
     pct_diff = abs(val - baseline_val) / abs(baseline_val)
     return pct_diff > tolerance
 
+def find_baseline_anomalies(current_profile, baseline_profile, stat_name="l2_norm", tolerance=0.1):
+    #compare every tensor in current_profile against baseline. return anomalous tensor names as list
+    anomalies = []
+    for name, stats in current_profile.items():
+        if name not in baseline_profile:
+            anomalies.append((name, "missing_from_baseline"))
+            continue
+        result = compare_to_baseline(stats, baseline_profile[name], stat_name, tolerance)
+        if result:
+            anomalies.append((name, "stat_deviation"))
+    return anomalies
+
 if __name__ == "__main__":
     baseline = load_profile("baseline_profile.json")
     corrupted = profile_checkpoint("test_models/model_corrupted.safetensors")
-    is_anomalous = compare_to_baseline(corrupted["wte.weight"], baseline["wte.weight"])
-    print(f"wte.weight anomalous vs baseline: {is_anomalous}")
+    anomalies = find_baseline_anomalies(corrupted, baseline)
+    print(f"Found {len(anomalies)} anomalies")
+    for name, reason in anomalies:
+        print(f"  {name}: {reason}")
