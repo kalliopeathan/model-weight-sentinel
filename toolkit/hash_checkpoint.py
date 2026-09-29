@@ -40,6 +40,20 @@ def aggregate_hash(manifest):
     combined = "".join(manifest[k] for k in sorted(manifest.keys())) #sort keys for determinism
     return hashlib.sha256(combined.encode()).hexdigest()
 
+def load_tensors(path):
+    #load all tensors from a checkpoint(safetensors or bin) into a plain dict - regardless of format
+    if path.endswith(".safetensors"):
+        tensors = {}
+        with safe_open(path, framework="pt") as f:
+            for name in f.keys():
+                tensors[name] = f.get_tensor(name)
+        return tensors
+    elif path.endswith(".bin"):
+        import torch
+        return torch.load(path, map_location="cpu", weights_only=True)
+    else:
+        raise ValueError(f"Unsupported checkpoint format: {path}")
+
 if __name__ == "__main__":
     import sys
     manifest = hash_checkpoint(sys.argv[1])
