@@ -98,6 +98,6 @@ def compare_to_baseline(stats, baseline_stats, stat_name="l2_norm", tolerance=0.
 
 if __name__ == "__main__":
     baseline = load_profile("baseline_profile.json")
-    current = profile_checkpoint("test_models/model.safetensors")
-    is_anomalous = compare_to_baseline(current["wte.weight"], baseline["wte.weight"])
+    corrupted = profile_checkpoint("test_models/model_corrupted.safetensors")
+    is_anomalous = compare_to_baseline(corrupted["wte.weight"], baseline["wte.weight"])
     print(f"wte.weight anomalous vs baseline: {is_anomalous}")
