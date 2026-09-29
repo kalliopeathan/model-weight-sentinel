@@ -85,7 +85,19 @@ def load_profile(path):
     with open(path) as f:
         return json.load(f)
 
+def compare_to_baseline(stats, baseline_stats, stat_name="l2_norm", tolerance=0.1):
+    #check if a tensor's stat differs from its baseline by more than the tolerance fraction
+    val = stats[stat_name]
+    baseline_val = baseline_stats[stat_name]
+    if val is None or baseline_val is None:
+        return None  #cant compare nan-affected tensors this way
+    if baseline_val == 0:
+        return val != 0
+    pct_diff = abs(val - baseline_val) / abs(baseline_val)
+    return pct_diff > tolerance
+
 if __name__ == "__main__":
-    profile = profile_checkpoint("test_models/model.safetensors")
-    save_profile(profile, "baseline_profile.json")
-    print(f"Saved baseline with {len(profile)} tensors")
+    baseline = load_profile("baseline_profile.json")
+    current = profile_checkpoint("test_models/model.safetensors")
+    is_anomalous = compare_to_baseline(current["wte.weight"], baseline["wte.weight"])
+    print(f"wte.weight anomalous vs baseline: {is_anomalous}")
