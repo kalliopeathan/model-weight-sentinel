@@ -108,6 +108,9 @@ def find_baseline_anomalies(current_profile, baseline_profile, tolerances=None):
         if name not in baseline_profile:
             anomalies.append((name, "missing_from_baseline"))
             continue
+        if stats.get("has_nan") or stats.get("has_inf"):
+            anomalies.append((name, "contains_nan_or_inf"))
+            continue  #stats are None - nothing else to compare
         for stat_name, tol in tolerances.items():
             if compare_to_baseline(stats, baseline_profile[name], stat_name, tol):
                 anomalies.append((name, f"{stat_name}_deviation"))
