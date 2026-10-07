@@ -96,16 +96,21 @@ def compare_to_baseline(stats, baseline_stats, stat_name="l2_norm", tolerance=0.
     pct_diff = abs(val - baseline_val) / abs(baseline_val)
     return pct_diff > tolerance
 
-def find_baseline_anomalies(current_profile, baseline_profile, stat_name="l2_norm", tolerance=0.1):
+
+DEFAULT_TOLERANCES = {"l2_norm": 0.1, "max_abs": 0.01}
+
+def find_baseline_anomalies(current_profile, baseline_profile, tolerances=None):
     #compare every tensor in current_profile against baseline. return anomalous tensor names as list
+    #flag a tensor if any tracked stat deviates from baseline beyond the stat's tolerance
+    tolerances = tolerances or DEFAULT_TOLERANCES
     anomalies = []
     for name, stats in current_profile.items():
         if name not in baseline_profile:
             anomalies.append((name, "missing_from_baseline"))
             continue
-        result = compare_to_baseline(stats, baseline_profile[name], stat_name, tolerance)
-        if result:
-            anomalies.append((name, "stat_deviation"))
+        for stat_name, tol in tolerances.items():
+            if compare_to_baseline(stats, baseline_profile[name], stat_name, tol):
+                anomalies.append((name, f"{stat_name}_deviation"))
     return anomalies
 
 if __name__ == "__main__":
