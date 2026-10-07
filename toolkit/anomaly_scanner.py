@@ -1,4 +1,5 @@
 from toolkit.hash_checkpoint import load_tensors
+from datetime import datetime, timezone
 import torch
 import re
 import json
@@ -115,6 +116,27 @@ def find_baseline_anomalies(current_profile, baseline_profile, tolerances=None):
             if compare_to_baseline(stats, baseline_profile[name], stat_name, tol):
                 anomalies.append((name, f"{stat_name}_deviation"))
     return anomalies
+
+def generate_report(checkpoint_path, baseline_path, diff_result=None):
+    #combine diff and anomaly results into one structured report dict
+    baseline = load_profile(baseline_path)
+    current = profile_checkpoint(checkpoint_path)
+    anomalies = find_baseline_anomalies(current, baseline)
+
+    report = {
+        "checkpoint": checkpoint_path,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "total_tensors": len(current),
+        "anomaly_count": len(anomalies),
+        "anomalies": [{"tensor": name, "reason": reason} for name, reason in anomalies],
+    }
+    if diff_result is not None:
+        report["diff"] = {
+            "added": diff_result.added,
+            "removed": diff_result.removed,
+            "changed": diff_result.changed,
+        }
+    return report
 
 if __name__ == "__main__":
     baseline = load_profile("baseline_profile.json")
