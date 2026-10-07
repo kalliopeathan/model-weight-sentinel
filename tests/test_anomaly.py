@@ -24,5 +24,12 @@ class TestBaselineAnomalies(unittest.TestCase):
         cur = {"b": make_stats(100.0, 1.0)}
         self.assertEqual(find_baseline_anomalies(cur, base), [("b", "missing_from_baseline")])
 
+    def test_nan_tensor_is_flagged(self):
+        # a tensor with nan values has None stats - it should be flagged, not silently skipped
+        base = {"a": make_stats(100.0, 1.0)}
+        nan_stats = {"mean": None, "std": None, "l2_norm": None, "max_abs": None, "has_nan": True, "has_inf": False}
+        cur = {"a": nan_stats}
+        self.assertEqual(find_baseline_anomalies(cur, base), [("a", "contains_nan_or_inf")])
+        
 if __name__ == "__main__":
     unittest.main()
