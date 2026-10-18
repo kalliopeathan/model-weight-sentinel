@@ -6,6 +6,7 @@ import json
 
 def tensor_stats(tensor):
     #compute basic statistics for one tensor - explicitly flag nan/inf so theyre not silently propagated
+    tensor = tensor.float()  #cast to float32 so int tensors work and bf16/fp16 stats aren't computed at low precision
     has_nan = torch.isnan(tensor).any().item()
     has_inf = torch.isinf(tensor).any().item()
 
@@ -21,7 +22,7 @@ def tensor_stats(tensor):
 
     return {
         "mean": tensor.mean().item(),
-        "std": tensor.std().item(),
+        "std": tensor.std().item() if tensor.numel() > 1 else 0.0,  #std of one value is nan in torch, treat as no spread
         "l2_norm": tensor.norm().item(),
         "max_abs": tensor.abs().max().item(),
         "has_nan": False,
