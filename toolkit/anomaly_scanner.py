@@ -168,11 +168,3 @@ def log_scan_history(report, history_path="scan_history.json"):
     with open(history_path, "w") as f:
         json.dump(history, f, indent=2)
     return history
-
-if __name__ == "__main__":
-    baseline = load_profile("baseline_profile.json")
-    corrupted = profile_checkpoint("test_models/model_corrupted.safetensors")
-    anomalies = find_baseline_anomalies(corrupted, baseline)
-    print(f"Found {len(anomalies)} anomalies")
-    for name, reason in anomalies:
-        print(f"  {name}: {reason}")
