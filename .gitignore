@@ -8,3 +8,4 @@ test_models/
 manifest.json
 baseline_profile.json
 report.json
+scan_history.json

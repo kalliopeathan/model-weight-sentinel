@@ -143,6 +143,27 @@ def generate_report(checkpoint_path, baseline_path, diff_result=None):
         }
     return report
 
+def log_scan_history(report, history_path="scan_history.json"):
+    #append a short summary of a scan report to a json list so results can be tracked across versions
+    try:
+        with open(history_path) as f:
+            history = json.load(f)
+    except FileNotFoundError:
+        history = []
+    except json.JSONDecodeError:
+        history = []  #corrupt or empty file - start fresh rather than crash
+    if not isinstance(history, list):
+        history = []  #valid json but not a list is just as unusable
+
+    history.append({
+        "checkpoint": report["checkpoint"],
+        "timestamp": report["timestamp"],
+        "anomaly_count": report["anomaly_count"],
+    })
+    with open(history_path, "w") as f:
+        json.dump(history, f, indent=2)
+    return history
+
 if __name__ == "__main__":
     baseline = load_profile("baseline_profile.json")
     corrupted = profile_checkpoint("test_models/model_corrupted.safetensors")
