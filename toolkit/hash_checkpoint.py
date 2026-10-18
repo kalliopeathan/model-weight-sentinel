@@ -13,7 +13,8 @@ def require_file(path):
 def hash_tensor(tensor):
     #hash a single tensor's raw bytes with SHA-256
     tensor = tensor.contiguous()  #ensure standard memory layout before reading raw bytes
-    return hashlib.sha256(tensor.numpy().tobytes()).hexdigest()
+    #view as raw uint8 bytes so dtypes numpy can't represent (bf16) still hash - bytes are unchanged
+    return hashlib.sha256(tensor.reshape(-1).view(torch.uint8).numpy().tobytes()).hexdigest()
 
 def hash_checkpoint(path):
     #hash every tensor in a checkpoint, auto-detecting safetensors vs bin format
