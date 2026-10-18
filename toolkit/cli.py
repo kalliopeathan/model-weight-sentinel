@@ -1,6 +1,8 @@
 import argparse
+import json
 from toolkit.hash_checkpoint import hash_checkpoint, save_manifest, aggregate_hash
 from toolkit.diff_checkpoint import diff_manifests, diff_percentage
+from toolkit.anomaly_scanner import generate_report
 
 #create one entry point with subcommands: toolkit hash <path>, toolkit diff <a> <b>
 #necessary to make this a CLI tool -not separate scripts- and to allow basic tests to pay off by refactoring shared code
@@ -18,6 +20,12 @@ def main():
     diff_parser = subparsers.add_parser("diff", help="Diff two checkpoints")
     diff_parser.add_argument("path_a")
     diff_parser.add_argument("path_b")
+
+    #define "scan" subcommand: compares a checkpoint's tensor stats against a known-good baseline profile
+    scan_parser = subparsers.add_parser("scan", help="Scan a checkpoint for anomalies against a baseline")
+    scan_parser.add_argument("path")
+    scan_parser.add_argument("--baseline", default="baseline_profile.json")
+    scan_parser.add_argument("--out", default="report.json")
 
     args = parser.parse_args()
 
@@ -39,12 +47,21 @@ def main():
             print(f"Unchanged: {len(result.unchanged)}")
             print(diff_percentage(result, len(manifest_a)))
 
+        elif args.command == "scan":
+            report = generate_report(args.path, args.baseline)
+            with open(args.out, "w") as f:
+                json.dump(report, f, indent=2)
+            print(f"Scanned {report['total_tensors']} tensors, found {report['anomaly_count']} anomalies")
+            print(f"Report saved to {args.out}")
+
         else:
             #no subcommand given
             parser.print_help()
     
-    except FileNotFoundError:
-        print("Error: file not found")
+    except FileNotFoundError as e:
+        #safetensors doesn't set e.filename, it puts the path at the end of the message instead
+        missing = e.filename or str(e).split(": ", 1)[-1]
+        print(f"Error: file not found: {missing}")
     
     except ValueError as e:
         print(f"Error: {e}")

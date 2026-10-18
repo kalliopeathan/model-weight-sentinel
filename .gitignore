@@ -7,3 +7,4 @@ test_models/
 .DS_Store
 manifest.json
 baseline_profile.json
+report.json
