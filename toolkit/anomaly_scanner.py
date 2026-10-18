@@ -29,22 +29,6 @@ def tensor_stats(tensor):
         "has_inf": False,
     }
 
-def find_outliers(profile, stat_name="l2_norm", z_threshold=3.0):
-    #flag tensors with a stat value of z_threshold std deviations from the mean across all tensors
-    values = [v[stat_name] for v in profile.values() if v[stat_name] is not None]
-    mean = sum(values) / len(values)
-    std = (sum((x - mean) ** 2 for x in values) / len(values)) ** 0.5
-
-    outliers = []
-    for name, stats in profile.items():
-        val = stats[stat_name]
-        if val is None:
-            continue
-        z = (val - mean) / std if std > 0 else 0
-        if abs(z) > z_threshold:
-            outliers.append((name, val, z))
-    return outliers
-
 def profile_checkpoint(path):
     #compute per-tensor statistics for every tensor in a checkpoint
     tensors = load_tensors(path)
