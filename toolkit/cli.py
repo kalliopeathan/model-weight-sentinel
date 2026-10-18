@@ -2,7 +2,7 @@ import argparse
 import json
 from toolkit.hash_checkpoint import hash_checkpoint, save_manifest, aggregate_hash
 from toolkit.diff_checkpoint import diff_manifests, diff_percentage
-from toolkit.anomaly_scanner import generate_report
+from toolkit.anomaly_scanner import generate_report, profile_checkpoint, save_profile
 
 #create one entry point with subcommands: toolkit hash <path>, toolkit diff <a> <b>
 #necessary to make this a CLI tool -not separate scripts- and to allow basic tests to pay off by refactoring shared code
@@ -26,6 +26,11 @@ def main():
     scan_parser.add_argument("path")
     scan_parser.add_argument("--baseline", default="baseline_profile.json")
     scan_parser.add_argument("--out", default="report.json")
+
+    #define "baseline" subcommand: profiles a known-good checkpoint so later scans have something to compare against
+    baseline_parser = subparsers.add_parser("baseline", help="Save a known-good checkpoint's stats as the baseline profile")
+    baseline_parser.add_argument("path")
+    baseline_parser.add_argument("--out", default="baseline_profile.json")
 
     args = parser.parse_args()
 
@@ -53,6 +58,11 @@ def main():
                 json.dump(report, f, indent=2)
             print(f"Scanned {report['total_tensors']} tensors, found {report['anomaly_count']} anomalies")
             print(f"Report saved to {args.out}")
+
+        elif args.command == "baseline":
+            profile = profile_checkpoint(args.path)
+            save_profile(profile, args.out)
+            print(f"Profiled {len(profile)} tensors, baseline saved to {args.out}")
 
         else:
             #no subcommand given
