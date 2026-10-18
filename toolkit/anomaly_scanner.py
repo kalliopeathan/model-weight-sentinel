@@ -123,12 +123,17 @@ def generate_report(checkpoint_path, baseline_path, diff_result=None):
     current = profile_checkpoint(checkpoint_path)
     anomalies = find_baseline_anomalies(current, baseline)
 
+    #group reasons per tensor so a tensor flagged by several stats is only counted once
+    grouped = {}
+    for name, reason in anomalies:
+        grouped.setdefault(name, []).append(reason)
+
     report = {
         "checkpoint": checkpoint_path,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "total_tensors": len(current),
-        "anomaly_count": len(anomalies),
-        "anomalies": [{"tensor": name, "reason": reason} for name, reason in anomalies],
+        "anomaly_count": len(grouped),
+        "anomalies": [{"tensor": name, "reasons": reasons} for name, reasons in grouped.items()],
     }
     if diff_result is not None:
         report["diff"] = {
