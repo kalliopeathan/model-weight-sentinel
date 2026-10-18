@@ -14,3 +14,4 @@ test_anomaly.py: unit tests for baseline anomaly detection (identical, sparse sp
 
 test_history.py: unit tests for log_scan_history (appends entries, survives a corrupt file, uses a temp file not the real history) and report grouping (two reasons on one tensor become one entry, anomaly_count 1).
 cli.py: added scan subcommand - compares a checkpoint against baseline_profile.json and writes report.json, grouped per tensor so anomaly_count counts tensors not reasons. backdoor -> 1 (h.5.mlp.c_fc.weight, max_abs only), corrupted -> 1 (wte.weight, l2_norm + max_abs), clean -> 0. log_scan_history appends checkpoint/timestamp/anomaly_count to scan_history.json for tracking across versions.
+test_errors.py: unit test that require_file raises FileNotFoundError with .filename set to the missing path, so cli.py no longer parses the safetensors error message to find it.

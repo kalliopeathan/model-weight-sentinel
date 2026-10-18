@@ -59,9 +59,7 @@ def main():
             parser.print_help()
     
     except FileNotFoundError as e:
-        #safetensors doesn't set e.filename, it puts the path at the end of the message instead
-        missing = e.filename or str(e).split(": ", 1)[-1]
-        print(f"Error: file not found: {missing}")
+        print(f"Error: file not found: {e.filename}")
     
     except ValueError as e:
         print(f"Error: {e}")

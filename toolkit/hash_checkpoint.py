@@ -1,7 +1,14 @@
+import errno
 import hashlib
+import os
 from safetensors import safe_open
 import json
 import torch
+
+def require_file(path):
+    #raise FileNotFoundError with .filename set, so callers never parse the message
+    if not os.path.isfile(path):
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
 def hash_tensor(tensor):
     #hash a single tensor's raw bytes with SHA-256
@@ -10,6 +17,7 @@ def hash_tensor(tensor):
 
 def hash_checkpoint(path):
     #hash every tensor in a checkpoint, auto-detecting safetensors vs bin format
+    require_file(path)
     if path.endswith(".safetensors"):
         manifest = {}
         with safe_open(path, framework="pt") as f:
@@ -42,6 +50,7 @@ def aggregate_hash(manifest):
 
 def load_tensors(path):
     #load all tensors from a checkpoint(safetensors or bin) into a plain dict - regardless of format
+    require_file(path)
     if path.endswith(".safetensors"):
         tensors = {}
         with safe_open(path, framework="pt") as f:

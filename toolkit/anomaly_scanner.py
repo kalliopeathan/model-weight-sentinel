@@ -1,4 +1,4 @@
-from toolkit.hash_checkpoint import load_tensors
+from toolkit.hash_checkpoint import load_tensors, require_file
 from datetime import datetime, timezone
 import torch
 import re
@@ -83,6 +83,7 @@ def save_profile(profile, out_path):
 
 def load_profile(path):
     #load a previously saved stats profile from json
+    require_file(path)
     with open(path) as f:
         return json.load(f)
 
