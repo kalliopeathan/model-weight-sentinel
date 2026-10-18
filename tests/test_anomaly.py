@@ -1,5 +1,6 @@
 import unittest
-from toolkit.anomaly_scanner import find_baseline_anomalies
+import torch
+from toolkit.anomaly_scanner import find_baseline_anomalies, tensor_stats
 
 def make_stats(l2, mx):
     #helper to build a stats dict without needing a real tensor
@@ -31,5 +32,18 @@ class TestBaselineAnomalies(unittest.TestCase):
         cur = {"a": nan_stats}
         self.assertEqual(find_baseline_anomalies(cur, base), [("a", "contains_nan_or_inf")])
         
+class TestTensorStats(unittest.TestCase):
+
+    def test_single_element_std_is_zero(self):
+        #std of one value is undefined (nan) in torch - should be 0.0 instead of looking like a nan tensor
+        self.assertEqual(tensor_stats(torch.tensor([5.0]))["std"], 0.0)
+
+    def test_integer_tensor_mean(self):
+        #torch can't take the mean of an int tensor directly
+        self.assertEqual(tensor_stats(torch.tensor([1, 2, 3]))["mean"], 2.0)
+
+    def test_bf16_tensor_mean(self):
+        self.assertAlmostEqual(tensor_stats(torch.tensor([1, 2, 3], dtype=torch.bfloat16))["mean"], 2.0, places=2)
+
 if __name__ == "__main__":
     unittest.main()
