@@ -117,10 +117,8 @@ def find_baseline_anomalies(current_profile, baseline_profile, tolerances=None):
                 anomalies.append((name, f"{stat_name}_deviation"))
     return anomalies
 
-def generate_report(checkpoint_path, baseline_path, diff_result=None):
-    #combine diff and anomaly results into one structured report dict
-    baseline = load_profile(baseline_path)
-    current = profile_checkpoint(checkpoint_path)
+def build_report(checkpoint_name, current, baseline, diff_result=None):
+    #build the report from profiles already in memory - no file io, so it can be unit tested
     anomalies = find_baseline_anomalies(current, baseline)
 
     #group reasons per tensor so a tensor flagged by several stats is only counted once
@@ -129,7 +127,7 @@ def generate_report(checkpoint_path, baseline_path, diff_result=None):
         grouped.setdefault(name, []).append(reason)
 
     report = {
-        "checkpoint": checkpoint_path,
+        "checkpoint": checkpoint_name,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "total_tensors": len(current),
         "anomaly_count": len(grouped),
@@ -142,6 +140,12 @@ def generate_report(checkpoint_path, baseline_path, diff_result=None):
             "changed": diff_result.changed,
         }
     return report
+
+def generate_report(checkpoint_path, baseline_path, diff_result=None):
+    #load both profiles from disk then build the combined diff and anomaly report
+    baseline = load_profile(baseline_path)
+    current = profile_checkpoint(checkpoint_path)
+    return build_report(checkpoint_path, current, baseline, diff_result)
 
 def log_scan_history(report, history_path="scan_history.json"):
     #append a short summary of a scan report to a json list so results can be tracked across versions
