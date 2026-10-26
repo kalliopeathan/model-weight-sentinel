@@ -11,10 +11,13 @@ def require_file(path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), path)
 
 def hash_tensor(tensor):
-    #hash a single tensor's raw bytes with SHA-256
-    tensor = tensor.contiguous()  #ensure standard memory layout before reading raw bytes
-    #view as raw uint8 bytes so dtypes numpy can't represent (bf16) still hash - bytes are unchanged
-    return hashlib.sha256(tensor.reshape(-1).view(torch.uint8).numpy().tobytes()).hexdigest()
+    #hash dtype, shape and raw bytes, so reshaping or reinterpreting a tensor changes the hash
+    tensor = tensor.contiguous()
+    h = hashlib.sha256()
+    h.update(str(tensor.dtype).encode() + b"|")
+    h.update(str(tuple(tensor.shape)).encode() + b"|")
+    h.update(tensor.reshape(-1).view(torch.uint8).numpy().tobytes())
+    return h.hexdigest()
 
 def hash_checkpoint(path):
     #hash every tensor in a checkpoint, auto-detecting safetensors vs bin format
